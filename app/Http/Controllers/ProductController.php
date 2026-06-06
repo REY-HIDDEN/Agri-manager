@@ -37,8 +37,10 @@ class ProductController extends Controller
             $query->where('quantity', '<', 10);
         }
 
-        if ($request->filled('sort')) {
-            $query->orderBy($request->sort, $request->direction ?? 'asc');
+        $allowedSortColumns = ['name', 'quantity', 'buying_price', 'selling_price', 'created_at'];
+        if ($request->filled('sort') && in_array($request->sort, $allowedSortColumns, true)) {
+            $direction = in_array($request->direction, ['asc', 'desc'], true) ? $request->direction : 'asc';
+            $query->orderBy($request->sort, $direction);
         } else {
             $query->latest();
         }

@@ -97,25 +97,25 @@
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: {!! json_encode($monthlyData->pluck('month')->map(fn($m) => \Carbon\Carbon::createFromFormat('Y-m', $m)->format('M Y'))) !!},
+                labels: @json($monthlyData->pluck('month')->map(fn($m) => \Carbon\Carbon::createFromFormat('Y-m', $m)->format('M Y'))),
                 datasets: [
                     {
                         label: 'Revenue',
-                        data: {!! json_encode($monthlyData->pluck('revenue')) !!},
+                        data: @json($monthlyData->pluck('revenue')),
                         backgroundColor: 'rgba(45, 106, 79, 0.7)',
                         borderColor: '#2d6a4f',
                         borderWidth: 1
                     },
                     {
                         label: 'Cost',
-                        data: {!! json_encode($monthlyData->pluck('cost')) !!},
+                        data: @json($monthlyData->pluck('cost')),
                         backgroundColor: 'rgba(198, 40, 40, 0.7)',
                         borderColor: '#c62828',
                         borderWidth: 1
                     },
                     {
                         label: 'Profit',
-                        data: {!! json_encode($monthlyData->pluck('profit')) !!},
+                        data: @json($monthlyData->pluck('profit')),
                         backgroundColor: 'rgba(46, 125, 50, 0.7)',
                         borderColor: '#2e7d32',
                         borderWidth: 1
