@@ -13,13 +13,14 @@ class BuyerController extends Controller
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('phone', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('phone', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%');
             });
         }
 
         $buyers = $query->latest()->paginate(10);
+
         return view('buyers.index', compact('buyers'));
     }
 
@@ -66,6 +67,7 @@ class BuyerController extends Controller
     public function destroy(Buyer $buyer)
     {
         $buyer->delete();
+
         return redirect()->route('buyers.index')
             ->with('success', 'Buyer deleted successfully.');
     }

@@ -59,16 +59,18 @@ class ReportController extends Controller
             ->withSum('sales', 'total_amount');
 
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $buyers = $query->orderBy('name')->paginate(10);
+
         return view('reports.buyers', compact('buyers'));
     }
 
     public function buyerHistory(Buyer $buyer)
     {
         $buyer->load('sales.saleDetails.product', 'sales.delivery');
+
         return view('reports.buyer-history', compact('buyer'));
     }
 
@@ -102,6 +104,7 @@ class ReportController extends Controller
             ->get()
             ->map(function ($item) {
                 $item->profit = $item->revenue - $item->cost;
+
                 return $item;
             });
 
