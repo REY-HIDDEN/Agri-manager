@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Buyer;
 use App\Models\Product;
 use App\Models\Sale;
-use App\Models\SaleDetail;
+use App\Services\ProfitCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -72,38 +72,13 @@ class ReportController extends Controller
         return view('reports.buyer-history', compact('buyer'));
     }
 
-    public function profit()
+    public function profit(ProfitCalculator $profitCalculator)
     {
-        // Total Revenue
-        $totalRevenue = Sale::sum('total_amount');
-
-        // Total Cost (buying_price * quantity sold)
-        $totalCost = SaleDetail::join('products', 'sale_details.product_id', '=', 'products.id')
-            ->selectRaw('COALESCE(SUM(sale_details.quantity * products.buying_price), 0) as total_cost')
-            ->value('total_cost');
-
-        $netProfit = $totalRevenue - $totalCost;
-        $profitMargin = $totalRevenue > 0 ? round(($netProfit / $totalRevenue) * 100, 2) : 0;
-
-        // Monthly breakdown
-        $monthlyData = Sale::selectRaw(
-            "strftime('%Y-%m', sale_date) as month,
-             SUM(total_amount) as revenue,
-             (SELECT COALESCE(SUM(sd.quantity * p.buying_price), 0)
-              FROM sale_details sd
-              JOIN products p ON p.id = sd.product_id
-              JOIN sales s2 ON s2.id = sd.sale_id
-              WHERE strftime('%Y-%m', s2.sale_date) = strftime('%Y-%m', sales.sale_date)
-             ) as cost"
-        )
-            ->groupBy('month')
-            ->orderBy('month', 'desc')
-            ->take(12)
-            ->get()
-            ->map(function ($item) {
-                $item->profit = $item->revenue - $item->cost;
-                return $item;
-            });
+        $totalRevenue = $profitCalculator->totalRevenue();
+        $totalCost = $profitCalculator->totalCost();
+        $netProfit = $profitCalculator->netProfit();
+        $profitMargin = $profitCalculator->profitMargin();
+        $monthlyData = $profitCalculator->monthlySummary();
 
         return view('reports.profit', compact('totalRevenue', 'totalCost', 'netProfit', 'profitMargin', 'monthlyData'));
     }

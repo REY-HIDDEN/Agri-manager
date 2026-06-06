@@ -3,12 +3,7 @@
 @section('title', 'Record Delivery')
 
 @section('content')
-<div class="page-header">
-    <h2><i class="fas fa-truck-loading me-2"></i>Record Delivery</h2>
-    <a href="{{ route('deliveries.index') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Back
-    </a>
-</div>
+<x-page-header icon="truck-loading" title="Record Delivery" :backRoute="route('deliveries.index')" />
 
 <div class="card">
     <div class="card-body">

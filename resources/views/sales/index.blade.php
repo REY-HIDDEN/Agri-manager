@@ -3,12 +3,7 @@
 @section('title', 'Sales')
 
 @section('content')
-<div class="page-header">
-    <h2><i class="fas fa-shopping-cart me-2"></i>Sales</h2>
-    <a href="{{ route('sales.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-1"></i> New Sale
-    </a>
-</div>
+<x-page-header icon="shopping-cart" title="Sales" :actionRoute="route('sales.create')" actionLabel="New Sale" />
 
 <div class="card">
     <div class="card-body">
@@ -60,15 +55,11 @@
                             <td>{{ $sale->sale_date->format('M d, Y') }}</td>
                             <td><strong>${{ number_format($sale->total_amount, 2) }}</strong></td>
                             <td>
-                                <span class="badge {{ $sale->payment_status == 'paid' ? 'bg-success' : ($sale->payment_status == 'partial' ? 'badge-partial' : 'badge-pending') }} text-dark">
-                                    {{ ucfirst($sale->payment_status) }}
-                                </span>
+                                <x-status-badge :status="$sale->payment_status" type="payment" />
                             </td>
                             <td>
                                 @if($sale->delivery)
-                                    <span class="badge {{ $sale->delivery->status == 'delivered' ? 'bg-success' : ($sale->delivery->status == 'in_transit' ? 'badge-transit' : 'badge-pending') }} text-dark">
-                                        {{ str_replace('_', ' ', ucfirst($sale->delivery->status)) }}
-                                    </span>
+                                    <x-status-badge :status="$sale->delivery->status" type="delivery" />
                                 @else
                                     <span class="text-muted">Not set</span>
                                 @endif
@@ -78,28 +69,18 @@
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @if(auth()->user()->isAdmin())
-                                <form action="{{ route('sales.destroy', $sale) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this sale? This will restore product stock.')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                <x-delete-button :route="route('sales.destroy', $sale)" confirm="Delete this sale? This will restore product stock." />
                                 @endif
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7">
-                                <div class="empty-state">
-                                    <i class="fas fa-shopping-cart"></i>
-                                    <h5>No Sales Recorded</h5>
-                                    <p>Record your first sale to start tracking transactions.</p>
-                                    <a href="{{ route('sales.create') }}" class="btn btn-primary">
-                                        <i class="fas fa-plus me-1"></i> New Sale
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
+                        <x-empty-state
+                            icon="shopping-cart"
+                            title="No Sales Recorded"
+                            message="Record your first sale to start tracking transactions."
+                            :actionRoute="route('sales.create')"
+                            actionLabel="New Sale"
+                        />
                     @endforelse
                 </tbody>
             </table>

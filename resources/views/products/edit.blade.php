@@ -3,12 +3,7 @@
 @section('title', 'Edit Product')
 
 @section('content')
-<div class="page-header">
-    <h2><i class="fas fa-edit me-2"></i>Edit Product</h2>
-    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Back
-    </a>
-</div>
+<x-page-header icon="edit" title="Edit Product" :backRoute="route('products.index')" />
 
 <div class="card">
     <div class="card-body">
