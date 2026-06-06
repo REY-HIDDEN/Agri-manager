@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
@@ -13,7 +14,7 @@ class ProductController extends Controller
         $query = Product::query();
 
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         // Filter by quantity range
@@ -38,12 +39,16 @@ class ProductController extends Controller
         }
 
         if ($request->filled('sort')) {
-            $query->orderBy($request->sort, $request->direction ?? 'asc');
+            $allowedSorts = ['name', 'quantity', 'buying_price', 'selling_price', 'created_at', 'updated_at'];
+            $sortColumn = in_array($request->sort, $allowedSorts) ? $request->sort : 'created_at';
+            $sortDirection = in_array($request->direction, ['asc', 'desc']) ? $request->direction : 'asc';
+            $query->orderBy($sortColumn, $sortDirection);
         } else {
             $query->latest();
         }
 
         $products = $query->paginate(10);
+
         return view('products.index', compact('products'));
     }
 
@@ -89,8 +94,22 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        $product->delete();
-        return redirect()->route('products.index')
-            ->with('success', 'Product deleted successfully.');
+        if ($product->saleDetails()->exists()) {
+            return back()->withErrors(['error' => "Cannot delete product '{$product->name}' because it has associated sales records."]);
+        }
+
+        try {
+            $product->delete();
+
+            return redirect()->route('products.index')
+                ->with('success', 'Product deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to delete product', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to delete product. Please try again.']);
+        }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -11,6 +12,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::latest()->paginate(10);
+
         return view('users.index', compact('users'));
     }
 
@@ -66,8 +68,22 @@ class UserController extends Controller
             return back()->withErrors(['error' => 'You cannot delete your own account.']);
         }
 
-        $user->delete();
-        return redirect()->route('users.index')
-            ->with('success', 'User deleted successfully.');
+        if ($user->isAdmin() && User::where('role', 'admin')->count() <= 1) {
+            return back()->withErrors(['error' => 'Cannot delete the last administrator account.']);
+        }
+
+        try {
+            $user->delete();
+
+            return redirect()->route('users.index')
+                ->with('success', 'User deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to delete user', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to delete user. Please try again.']);
+        }
     }
 }
