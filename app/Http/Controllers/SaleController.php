@@ -8,6 +8,7 @@ use App\Models\Sale;
 use App\Models\SaleDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SaleController extends Controller
 {
@@ -17,7 +18,7 @@ class SaleController extends Controller
 
         if ($request->filled('search')) {
             $query->whereHas('buyer', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -34,6 +35,7 @@ class SaleController extends Controller
         }
 
         $sales = $query->latest()->paginate(10);
+
         return view('sales.index', compact('sales'));
     }
 
@@ -41,6 +43,7 @@ class SaleController extends Controller
     {
         $buyers = Buyer::orderBy('name')->get();
         $products = Product::where('quantity', '>', 0)->orderBy('name')->get();
+
         return view('sales.create', compact('buyers', 'products'));
     }
 
@@ -71,7 +74,11 @@ class SaleController extends Controller
                 $product = Product::findOrFail($item['product_id']);
 
                 if ($product->quantity < $item['quantity']) {
-                    throw new \Exception("Insufficient stock for product: {$product->name}. Available: {$product->quantity}, Requested: {$item['quantity']}");
+                    DB::rollBack();
+
+                    return back()->withErrors([
+                        'error' => "Insufficient stock for product: {$product->name}. Available: {$product->quantity}, Requested: {$item['quantity']}",
+                    ])->withInput();
                 }
 
                 $subtotal = $product->selling_price * $item['quantity'];
@@ -96,13 +103,20 @@ class SaleController extends Controller
                 ->with('success', 'Sale recorded successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => $e->getMessage()])->withInput();
+            Log::error('Failed to create sale', [
+                'buyer_id' => $validated['buyer_id'],
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to record sale. Please try again or contact support.'])->withInput();
         }
     }
 
     public function show(Sale $sale)
     {
         $sale->load('buyer', 'saleDetails.product', 'delivery');
+
         return view('sales.show', compact('sale'));
     }
 
@@ -111,11 +125,12 @@ class SaleController extends Controller
         $buyers = Buyer::orderBy('name')->get();
         $products = Product::where(function ($q) use ($sale) {
             $q->where('quantity', '>', 0)
-              ->orWhereHas('saleDetails', function ($q) use ($sale) {
-                  $q->where('sale_id', $sale->id);
-              });
+                ->orWhereHas('saleDetails', function ($q) use ($sale) {
+                    $q->where('sale_id', $sale->id);
+                });
         })->orderBy('name')->get();
         $sale->load('saleDetails.product');
+
         return view('sales.edit', compact('sale', 'buyers', 'products'));
     }
 
@@ -155,7 +170,13 @@ class SaleController extends Controller
                 ->with('success', 'Sale deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Failed to delete sale.']);
+            Log::error('Failed to delete sale', [
+                'sale_id' => $sale->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to delete sale: '.$e->getMessage()]);
         }
     }
 }

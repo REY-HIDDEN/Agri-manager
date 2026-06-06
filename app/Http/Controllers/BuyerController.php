@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Buyer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class BuyerController extends Controller
 {
@@ -13,13 +14,14 @@ class BuyerController extends Controller
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('phone', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('phone', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%');
             });
         }
 
         $buyers = $query->latest()->paginate(10);
+
         return view('buyers.index', compact('buyers'));
     }
 
@@ -65,8 +67,22 @@ class BuyerController extends Controller
 
     public function destroy(Buyer $buyer)
     {
-        $buyer->delete();
-        return redirect()->route('buyers.index')
-            ->with('success', 'Buyer deleted successfully.');
+        if ($buyer->sales()->exists()) {
+            return back()->withErrors(['error' => "Cannot delete buyer '{$buyer->name}' because they have associated sales records."]);
+        }
+
+        try {
+            $buyer->delete();
+
+            return redirect()->route('buyers.index')
+                ->with('success', 'Buyer deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to delete buyer', [
+                'buyer_id' => $buyer->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to delete buyer. Please try again.']);
+        }
     }
 }

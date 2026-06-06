@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Delivery;
 use App\Models\Sale;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class DeliveryController extends Controller
 {
@@ -17,6 +18,7 @@ class DeliveryController extends Controller
         }
 
         $deliveries = $query->latest()->paginate(10);
+
         return view('deliveries.index', compact('deliveries'));
     }
 
@@ -26,6 +28,7 @@ class DeliveryController extends Controller
             ->whereDoesntHave('delivery')
             ->orderBy('created_at', 'desc')
             ->get();
+
         return view('deliveries.create', compact('sales'));
     }
 
@@ -47,6 +50,7 @@ class DeliveryController extends Controller
     public function edit(Delivery $delivery)
     {
         $delivery->load('sale.buyer');
+
         return view('deliveries.edit', compact('delivery'));
     }
 
@@ -66,8 +70,18 @@ class DeliveryController extends Controller
 
     public function destroy(Delivery $delivery)
     {
-        $delivery->delete();
-        return redirect()->route('deliveries.index')
-            ->with('success', 'Delivery deleted successfully.');
+        try {
+            $delivery->delete();
+
+            return redirect()->route('deliveries.index')
+                ->with('success', 'Delivery deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to delete delivery', [
+                'delivery_id' => $delivery->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to delete delivery. Please try again.']);
+        }
     }
 }
