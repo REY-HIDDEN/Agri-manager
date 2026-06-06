@@ -11,6 +11,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::latest()->paginate(10);
+
         return view('users.index', compact('users'));
     }
 
@@ -67,6 +68,7 @@ class UserController extends Controller
         }
 
         $user->delete();
+
         return redirect()->route('users.index')
             ->with('success', 'User deleted successfully.');
     }

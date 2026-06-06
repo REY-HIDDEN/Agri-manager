@@ -17,7 +17,7 @@ class SaleController extends Controller
 
         if ($request->filled('search')) {
             $query->whereHas('buyer', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -34,6 +34,7 @@ class SaleController extends Controller
         }
 
         $sales = $query->latest()->paginate(10);
+
         return view('sales.index', compact('sales'));
     }
 
@@ -41,6 +42,7 @@ class SaleController extends Controller
     {
         $buyers = Buyer::orderBy('name')->get();
         $products = Product::where('quantity', '>', 0)->orderBy('name')->get();
+
         return view('sales.create', compact('buyers', 'products'));
     }
 
@@ -96,6 +98,7 @@ class SaleController extends Controller
                 ->with('success', 'Sale recorded successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
     }
@@ -103,6 +106,7 @@ class SaleController extends Controller
     public function show(Sale $sale)
     {
         $sale->load('buyer', 'saleDetails.product', 'delivery');
+
         return view('sales.show', compact('sale'));
     }
 
@@ -111,11 +115,12 @@ class SaleController extends Controller
         $buyers = Buyer::orderBy('name')->get();
         $products = Product::where(function ($q) use ($sale) {
             $q->where('quantity', '>', 0)
-              ->orWhereHas('saleDetails', function ($q) use ($sale) {
-                  $q->where('sale_id', $sale->id);
-              });
+                ->orWhereHas('saleDetails', function ($q) use ($sale) {
+                    $q->where('sale_id', $sale->id);
+                });
         })->orderBy('name')->get();
         $sale->load('saleDetails.product');
+
         return view('sales.edit', compact('sale', 'buyers', 'products'));
     }
 
@@ -155,6 +160,7 @@ class SaleController extends Controller
                 ->with('success', 'Sale deleted successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->withErrors(['error' => 'Failed to delete sale.']);
         }
     }

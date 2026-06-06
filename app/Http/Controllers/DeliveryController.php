@@ -17,6 +17,7 @@ class DeliveryController extends Controller
         }
 
         $deliveries = $query->latest()->paginate(10);
+
         return view('deliveries.index', compact('deliveries'));
     }
 
@@ -26,6 +27,7 @@ class DeliveryController extends Controller
             ->whereDoesntHave('delivery')
             ->orderBy('created_at', 'desc')
             ->get();
+
         return view('deliveries.create', compact('sales'));
     }
 
@@ -47,6 +49,7 @@ class DeliveryController extends Controller
     public function edit(Delivery $delivery)
     {
         $delivery->load('sale.buyer');
+
         return view('deliveries.edit', compact('delivery'));
     }
 
@@ -67,6 +70,7 @@ class DeliveryController extends Controller
     public function destroy(Delivery $delivery)
     {
         $delivery->delete();
+
         return redirect()->route('deliveries.index')
             ->with('success', 'Delivery deleted successfully.');
     }
