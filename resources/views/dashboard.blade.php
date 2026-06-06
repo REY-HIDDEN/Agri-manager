@@ -135,10 +135,10 @@
         new Chart(salesCtx, {
             type: 'line',
             data: {
-                labels: {!! json_encode($salesChart->pluck('date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('M d'))) !!},
+                labels: @json($salesChart->pluck('date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('M d'))),
                 datasets: [{
                     label: 'Sales ($)',
-                    data: {!! json_encode($salesChart->pluck('total')) !!},
+                    data: @json($salesChart->pluck('total')),
                     borderColor: '#2d6a4f',
                     backgroundColor: 'rgba(45, 106, 79, 0.1)',
                     fill: true,
@@ -170,10 +170,10 @@
         new Chart(revCtx, {
             type: 'bar',
             data: {
-                labels: {!! json_encode($revenueChart->pluck('month')) !!},
+                labels: @json($revenueChart->pluck('month')),
                 datasets: [{
                     label: 'Revenue ($)',
-                    data: {!! json_encode($revenueChart->pluck('total')) !!},
+                    data: @json($revenueChart->pluck('total')),
                     backgroundColor: 'rgba(45, 106, 79, 0.7)',
                     borderColor: '#2d6a4f',
                     borderWidth: 2,
@@ -201,11 +201,11 @@
         new Chart(stockCtx, {
             type: 'bar',
             data: {
-                labels: {!! json_encode($stockChart->pluck('name')) !!},
+                labels: @json($stockChart->pluck('name')),
                 datasets: [{
                     label: 'In Stock',
-                    data: {!! json_encode($stockChart->pluck('quantity')) !!},
-                    backgroundColor: {!! json_encode($stockChart->map(fn($p) => $p->quantity < 10 ? '#dc3545' : ($p->quantity < 50 ? '#ffc107' : '#28a745'))) !!},
+                    data: @json($stockChart->pluck('quantity')),
+                    backgroundColor: @json($stockChart->map(fn($p) => $p->quantity < 10 ? '#dc3545' : ($p->quantity < 50 ? '#ffc107' : '#28a745'))),
                     borderRadius: 4,
                 }]
             },
@@ -238,10 +238,10 @@
         new Chart(salesCtx, {
             type: 'line',
             data: {
-                labels: {!! json_encode($salesChart->pluck('date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('M d'))) !!},
+                labels: @json($salesChart->pluck('date')->map(fn($d) => \Carbon\Carbon::parse($d)->format('M d'))),
                 datasets: [{
                     label: 'Sales ($)',
-                    data: {!! json_encode($salesChart->pluck('total')) !!},
+                    data: @json($salesChart->pluck('total')),
                     borderColor: '#2d6a4f',
                     backgroundColor: 'rgba(45, 106, 79, 0.1)',
                     fill: true,
