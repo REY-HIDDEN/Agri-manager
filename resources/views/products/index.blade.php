@@ -3,14 +3,11 @@
 @section('title', 'Products')
 
 @section('content')
-<div class="page-header">
-    <h2><i class="fas fa-apple-alt me-2"></i>Products</h2>
-    @if(auth()->user()->isAdmin())
-    <a href="{{ route('products.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-1"></i> Add Product
-    </a>
-    @endif
-</div>
+@if(auth()->user()->isAdmin())
+    <x-page-header icon="apple-alt" title="Products" :actionRoute="route('products.create')" actionLabel="Add Product" />
+@else
+    <x-page-header icon="apple-alt" title="Products" />
+@endif
 
 <div class="card">
     <div class="card-body">
@@ -90,30 +87,19 @@
                                 <a href="{{ route('products.edit', $product) }}" class="btn btn-sm btn-outline-primary me-1">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('products.destroy', $product) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this product?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                <x-delete-button :route="route('products.destroy', $product)" confirm="Delete this product?" />
                             </td>
                             @endif
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="{{ auth()->user()->isAdmin() ? '8' : '7' }}">
-                                <div class="empty-state">
-                                    <i class="fas fa-apple-alt"></i>
-                                    <h5>No Products Yet</h5>
-                                    <p>Start by adding your first agricultural product.</p>
-                                    @if(auth()->user()->isAdmin())
-                                    <a href="{{ route('products.create') }}" class="btn btn-primary">
-                                        <i class="fas fa-plus me-1"></i> Add Product
-                                    </a>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
+                        <x-empty-state
+                            icon="apple-alt"
+                            title="No Products Yet"
+                            message="Start by adding your first agricultural product."
+                            :actionRoute="auth()->user()->isAdmin() ? route('products.create') : null"
+                            :actionLabel="auth()->user()->isAdmin() ? 'Add Product' : null"
+                            :colspan="auth()->user()->isAdmin() ? 8 : 7"
+                        />
                     @endforelse
                 </tbody>
             </table>

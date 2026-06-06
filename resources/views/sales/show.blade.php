@@ -34,9 +34,7 @@
                     <tr>
                         <td class="text-muted">Payment Status</td>
                         <td>
-                            <span class="badge {{ $sale->payment_status == 'paid' ? 'bg-success' : ($sale->payment_status == 'partial' ? 'badge-partial' : 'badge-pending') }} text-dark">
-                                {{ ucfirst($sale->payment_status) }}
-                            </span>
+                                <x-status-badge :status="$sale->payment_status" type="payment" />
                         </td>
                     </tr>
                     <tr>
@@ -123,9 +121,7 @@
             <tr>
                 <td class="text-muted">Status</td>
                 <td>
-                    <span class="badge {{ $sale->delivery->status == 'delivered' ? 'bg-success' : ($sale->delivery->status == 'in_transit' ? 'badge-transit' : 'badge-pending') }} text-dark">
-                        {{ str_replace('_', ' ', ucfirst($sale->delivery->status)) }}
-                    </span>
+                    <x-status-badge :status="$sale->delivery->status" type="delivery" />
                 </td>
             </tr>
         </table>

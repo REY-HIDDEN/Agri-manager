@@ -3,14 +3,11 @@
 @section('title', 'Deliveries')
 
 @section('content')
-<div class="page-header">
-    <h2><i class="fas fa-truck me-2"></i>Deliveries</h2>
-    @if(auth()->user()->isAdmin())
-    <a href="{{ route('deliveries.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-1"></i> Record Delivery
-    </a>
-    @endif
-</div>
+@if(auth()->user()->isAdmin())
+    <x-page-header icon="truck" title="Deliveries" :actionRoute="route('deliveries.create')" actionLabel="Record Delivery" />
+@else
+    <x-page-header icon="truck" title="Deliveries" />
+@endif
 
 <div class="card">
     <div class="card-body">
@@ -53,39 +50,26 @@
                             <td>{{ $delivery->delivery_date->format('M d, Y') }}</td>
                             <td>{{ Str::limit($delivery->destination, 30) }}</td>
                             <td>
-                                <span class="badge {{ $delivery->status == 'delivered' ? 'bg-success' : ($delivery->status == 'in_transit' ? 'badge-transit' : 'badge-pending') }} text-dark">
-                                    {{ str_replace('_', ' ', ucfirst($delivery->status)) }}
-                                </span>
+                                <x-status-badge :status="$delivery->status" type="delivery" />
                             </td>
                             @if(auth()->user()->isAdmin())
                             <td>
                                 <a href="{{ route('deliveries.edit', $delivery) }}" class="btn btn-sm btn-outline-primary me-1">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('deliveries.destroy', $delivery) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this delivery record?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                <x-delete-button :route="route('deliveries.destroy', $delivery)" confirm="Delete this delivery record?" />
                             </td>
                             @endif
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="{{ auth()->user()->isAdmin() ? '7' : '6' }}">
-                                <div class="empty-state">
-                                    <i class="fas fa-truck"></i>
-                                    <h5>No Deliveries Recorded</h5>
-                                    <p>Record deliveries for completed sales.</p>
-                                    @if(auth()->user()->isAdmin())
-                                    <a href="{{ route('deliveries.create') }}" class="btn btn-primary">
-                                        <i class="fas fa-plus me-1"></i> Record Delivery
-                                    </a>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
+                        <x-empty-state
+                            icon="truck"
+                            title="No Deliveries Recorded"
+                            message="Record deliveries for completed sales."
+                            :actionRoute="auth()->user()->isAdmin() ? route('deliveries.create') : null"
+                            :actionLabel="auth()->user()->isAdmin() ? 'Record Delivery' : null"
+                            :colspan="auth()->user()->isAdmin() ? 7 : 6"
+                        />
                     @endforelse
                 </tbody>
             </table>

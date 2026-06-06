@@ -3,12 +3,7 @@
 @section('title', 'User Management')
 
 @section('content')
-<div class="page-header">
-    <h2><i class="fas fa-user-cog me-2"></i>User Management</h2>
-    <a href="{{ route('users.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-1"></i> Add User
-    </a>
-</div>
+<x-page-header icon="user-cog" title="User Management" :actionRoute="route('users.create')" actionLabel="Add User" />
 
 <div class="card">
     <div class="card-body p-0">
@@ -46,28 +41,18 @@
                             <i class="fas fa-edit"></i>
                         </a>
                         @if($user->id !== auth()->id())
-                        <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this user?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
+                        <x-delete-button :route="route('users.destroy', $user)" confirm="Delete this user?" />
                         @endif
                     </td>
                 </tr>
                 @empty
-                <tr>
-                    <td colspan="7">
-                        <div class="empty-state">
-                            <i class="fas fa-user-cog"></i>
-                            <h5>No Users Found</h5>
-                            <p>Create users to manage system access.</p>
-                            <a href="{{ route('users.create') }}" class="btn btn-primary">
-                                <i class="fas fa-plus me-1"></i> Add User
-                            </a>
-                        </div>
-                    </td>
-                </tr>
+                <x-empty-state
+                    icon="user-cog"
+                    title="No Users Found"
+                    message="Create users to manage system access."
+                    :actionRoute="route('users.create')"
+                    actionLabel="Add User"
+                />
                 @endforelse
             </tbody>
         </table>

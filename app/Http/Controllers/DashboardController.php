@@ -6,25 +6,20 @@ use App\Models\Buyer;
 use App\Models\Delivery;
 use App\Models\Product;
 use App\Models\Sale;
-use Illuminate\Support\Facades\DB;
+use App\Services\ProfitCalculator;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(ProfitCalculator $profitCalculator)
     {
         $totalProducts = Product::count();
         $totalBuyers = Buyer::count();
         $totalSales = Sale::count();
-        $totalRevenue = Sale::sum('total_amount');
+        $totalRevenue = $profitCalculator->totalRevenue();
         $pendingDeliveries = Delivery::where('status', '!=', 'delivered')->count();
 
-        // Profit calculation
-        $totalCost = DB::table('sale_details')
-            ->join('products', 'sale_details.product_id', '=', 'products.id')
-            ->selectRaw('SUM(sale_details.quantity * products.buying_price) as total_cost')
-            ->value('total_cost') ?? 0;
-
-        $totalProfit = $totalRevenue - $totalCost;
+        $totalCost = $profitCalculator->totalCost();
+        $totalProfit = $profitCalculator->netProfit();
 
         // Sales chart data (last 7 days)
         $salesChart = Sale::selectRaw('DATE(sale_date) as date, SUM(total_amount) as total')

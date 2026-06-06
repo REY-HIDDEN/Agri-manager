@@ -3,12 +3,7 @@
 @section('title', 'Buyers')
 
 @section('content')
-<div class="page-header">
-    <h2><i class="fas fa-users me-2"></i>Buyers</h2>
-    <a href="{{ route('buyers.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-1"></i> Add Buyer
-    </a>
-</div>
+<x-page-header icon="users" title="Buyers" :actionRoute="route('buyers.create')" actionLabel="Add Buyer" />
 
 <div class="card">
     <div class="card-body">
@@ -54,27 +49,17 @@
                                 <a href="{{ route('buyers.edit', $buyer) }}" class="btn btn-sm btn-outline-primary me-1">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('buyers.destroy', $buyer) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this buyer?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                <x-delete-button :route="route('buyers.destroy', $buyer)" confirm="Delete this buyer?" />
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7">
-                                <div class="empty-state">
-                                    <i class="fas fa-users"></i>
-                                    <h5>No Buyers Yet</h5>
-                                    <p>Add your first buyer to start recording sales.</p>
-                                    <a href="{{ route('buyers.create') }}" class="btn btn-primary">
-                                        <i class="fas fa-plus me-1"></i> Add Buyer
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
+                        <x-empty-state
+                            icon="users"
+                            title="No Buyers Yet"
+                            message="Add your first buyer to start recording sales."
+                            :actionRoute="route('buyers.create')"
+                            actionLabel="Add Buyer"
+                        />
                     @endforelse
                 </tbody>
             </table>

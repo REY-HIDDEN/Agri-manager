@@ -3,12 +3,7 @@
 @section('title', 'Add Buyer')
 
 @section('content')
-<div class="page-header">
-    <h2><i class="fas fa-user-plus me-2"></i>Add Buyer</h2>
-    <a href="{{ route('buyers.index') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i> Back
-    </a>
-</div>
+<x-page-header icon="user-plus" title="Add Buyer" :backRoute="route('buyers.index')" />
 
 <div class="card">
     <div class="card-body">
